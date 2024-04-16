@@ -12,27 +12,30 @@ const Main=()=>{
     const [prevUrl,setPrevUrl]=useState();
     const [pokeDex,setPokeDex]=useState();
 
-    const pokeFun=async()=>{
-        setLoading(true)
-        const res=await axios.get(url);
+    const pokeFun = async () => {
+        setLoading(true);
+        const res = await axios.get(url);
         setNextUrl(res.data.next);
         setPrevUrl(res.data.previous);
-        getPokemon(res.data.results)
-        setLoading(false)
-    }
-    const getPokemon=async(res)=>{
-       res.map(async(item)=>{
-          const result=await axios.get(item.url)
-          setPokeData(state=>{
-              state=[...state,result.data]
-              state.sort((a,b)=>a.id>b.id?1:-1)
-              return state;
-          })
-       })   
-    }
-    useEffect(()=>{
+        const pokemonData = await getPokemon(res.data.results); 
+        setPokeData(pokemonData); 
+        setLoading(false);
+    };
+    
+    const getPokemon = async (res) => {
+        const pokemonData = await Promise.all(res.map(async (item) => {
+            const result = await axios.get(item.url);
+            return result.data;
+        }));
+                pokemonData.sort((a, b) => a.id - b.id);
+        
+        return pokemonData; 
+    };
+    
+    useEffect(() => {
         pokeFun();
-    },[])
+    }, [url]);
+
     return(
         <>
             <div className="container">
